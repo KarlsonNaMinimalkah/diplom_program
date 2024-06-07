@@ -1,0 +1,134 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f2f2f2; /* светло-серый фон */
+    color: #333; /* черный текст */
+}
+
+header {
+    background-color: #cc0000; /* красный фон заголовка */
+    color: #fff; /* белый текст */
+    text-align: center;
+    padding: 20px 0;
+    position: relative; /* позволяет позиционировать дочерние элементы */
+}
+
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 10px;
+    padding: 10px 20px;
+    border-radius: 20px; /* закругленные углы */
+    background-color: #ff6600; /* оранжевый фон */
+    border: 2px solid transparent;
+    transition: all 0.3s ease; /* плавное изменение стилей */
+}
+
+nav a:hover {
+    background-color: transparent; /* прозрачный фон при наведении */
+    color: #ff6600; /* оранжевый текст при наведении */
+    border-color: #ff6600; /* оранжевая рамка при наведении */
+}
+
+/* Стили для кнопки "Вход" и корзины */
+.user-actions {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.user-actions a {
+    background-color: #333; /* Черный фон */
+    color: #fff; /* Белый текст */
+    padding: 10px 20px;
+    border-radius: 20px; /* Закругленные углы */
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.user-actions a:hover {
+    background-color: #ff6600; /* Оранжевый фон при наведении */
+}
+
+.cart img {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+}
+
+/* Стили для поля поиска */
+.search-bar {
+    margin-top: 25px;
+    text-align: center;
+}
+
+.search-bar input[type="text"] {
+    padding: 10px;
+    border-radius: 20px; /* Закругленные углы */
+    border: 1px solid #ccc; /* Светло-серая рамка */
+    width: 50%; /* Половина ширины */
+    transition: border-color 0.3s ease;
+}
+
+.search-bar input[type="text"]:focus {
+    border-color: #ff6600; /* Оранжевая рамка при фокусе */
+    outline: none;
+}
+
+.search-bar button {
+    padding: 10px 20px;
+    border-radius: 20px; /* Закругленные углы */
+    background-color: #ff6600; /* Оранжевый фон */
+    color: #fff; /* Белый текст */
+    border: none;
+    margin-left: 10px;
+}
+
+
+main {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.product {
+    border: 1px solid #666; /* серая граница */
+    background-color: #fff; /* белый фон */
+    padding: 20px;
+    border-radius: 10px; /* закругленные углы */
+}
+
+.product img {
+    width: 100%;
+    height: auto;
+}
+
+button {
+    background-color: #ff6600; /* оранжевая кнопка */
+    color: #fff; /* белый текст */
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px; /* закругленные углы кнопки */
+}
+
+footer {
+    background-color: #000; /* черный фон подвала */
+    color: #fff; /* белый текст */
+    text-align: center;
+    padding: 20px 0;
+}
+
+.search-bar{
+    margin-top: 25px;
+    
+}
