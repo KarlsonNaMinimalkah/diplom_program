@@ -2,16 +2,16 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f2f2f2; /* светло-серый фон */
-    color: #333; /* черный текст */
+    background-color: #f2f2f2;
+    color: #333;
 }
 
 header {
-    background-color: #cc0000; /* красный фон заголовка */
-    color: #fff; /* белый текст */
+    background-color: #cc0000;
+    color: #fff;
     text-align: center;
     padding: 20px 0;
-    position: relative; /* позволяет позиционировать дочерние элементы */
+    position: relative;
 }
 
 nav {
@@ -23,19 +23,18 @@ nav a {
     text-decoration: none;
     margin: 0 10px;
     padding: 10px 20px;
-    border-radius: 20px; /* закругленные углы */
-    background-color: #ff6600; /* оранжевый фон */
+    border-radius: 20px;
+    background-color: #ff6600;
     border: 2px solid transparent;
-    transition: all 0.3s ease; /* плавное изменение стилей */
+    transition: all 0.3s ease;
 }
 
 nav a:hover {
-    background-color: transparent; /* прозрачный фон при наведении */
-    color: #ff6600; /* оранжевый текст при наведении */
-    border-color: #ff6600; /* оранжевая рамка при наведении */
+    background-color: transparent;
+    color: #ff6600;
+    border-color: #ff6600;
 }
 
-/* Стили для кнопки "Вход" и корзины */
 .user-actions {
     position: absolute;
     bottom: 10px;
@@ -45,17 +44,17 @@ nav a:hover {
 }
 
 .user-actions a {
-    background-color: #333; /* Черный фон */
-    color: #fff; /* Белый текст */
+    background-color: #333;
+    color: #fff;
     padding: 10px 20px;
-    border-radius: 20px; /* Закругленные углы */
+    border-radius: 20px;
     text-decoration: none;
     transition: background-color 0.3s ease;
     margin-right: 10px;
 }
 
 .user-actions a:hover {
-    background-color: #ff6600; /* Оранжевый фон при наведении */
+    background-color: #ff6600;
 }
 
 .cart img {
@@ -64,7 +63,6 @@ nav a:hover {
     margin-right: 5px;
 }
 
-/* Стили для поля поиска */
 .search-bar {
     margin-top: 25px;
     text-align: center;
@@ -72,26 +70,25 @@ nav a:hover {
 
 .search-bar input[type="text"] {
     padding: 10px;
-    border-radius: 20px; /* Закругленные углы */
-    border: 1px solid #ccc; /* Светло-серая рамка */
-    width: 50%; /* Половина ширины */
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    width: 50%;
     transition: border-color 0.3s ease;
 }
 
 .search-bar input[type="text"]:focus {
-    border-color: #ff6600; /* Оранжевая рамка при фокусе */
+    border-color: #ff6600;
     outline: none;
 }
 
 .search-bar button {
     padding: 10px 20px;
-    border-radius: 20px; /* Закругленные углы */
-    background-color: #ff6600; /* Оранжевый фон */
-    color: #fff; /* Белый текст */
+    border-radius: 20px;
+    background-color: #ff6600;
+    color: #fff;
     border: none;
     margin-left: 10px;
 }
-
 
 main {
     display: grid;
@@ -101,10 +98,10 @@ main {
 }
 
 .product {
-    border: 1px solid #666; /* серая граница */
-    background-color: #fff; /* белый фон */
+    border: 1px solid #666;
+    background-color: #fff;
     padding: 20px;
-    border-radius: 10px; /* закругленные углы */
+    border-radius: 10px;
 }
 
 .product img {
@@ -113,22 +110,51 @@ main {
 }
 
 button {
-    background-color: #ff6600; /* оранжевая кнопка */
-    color: #fff; /* белый текст */
+    background-color: #ff6600;
+    color: #fff;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
-    border-radius: 5px; /* закругленные углы кнопки */
+    border-radius: 5px;
 }
 
 footer {
-    background-color: #000; /* черный фон подвала */
-    color: #fff; /* белый текст */
+    background-color: #000;
+    color: #fff;
     text-align: center;
     padding: 20px 0;
 }
 
-.search-bar{
-    margin-top: 25px;
-    
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a, .dropdown-content form button {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover, .dropdown-content form button:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
 }

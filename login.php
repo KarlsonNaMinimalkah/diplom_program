@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 $servername = "localhost";
@@ -12,33 +11,42 @@ $mysqli = new mysqli($servername, $username, $password, $dbname);
 if ($mysqli->connect_error) {
     die("Ошибка подключения: " . $mysqli->connect_error);
 }
+
+$error = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
+    $email = $_POST["email"];
     $password = $_POST["password"];
 
-    $query = "SELECT * FROM users WHERE username = '$username'";
-    $result = $mysqli->query($query);
+    $query = "SELECT id, username, password FROM users WHERE email = ?";
+    $stmt = $mysqli->prepare($query);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    if ($result && $result->num_rows > 0) {
+    if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        // После успешной авторизации
-if (password_verify($password, $user["password"])) {
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['username'] = $user['username']; // Сохраняем имя пользователя в сессии
-    $user_id = $user['id'];
-    header("Location: programs/index.php");
-    exit();
-}
-else {
-            $error = "Неверное имя пользователя или пароль";
+        
+        if ($password == $user["password"]) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            
+            header("Location: /диплом/programs/index.php");
+            exit();
+        } else {
+            $error = "Неверный email или пароль";
         }
     } else {
-        $error = "Неверное имя пользователя или пароль";
+        $error = "Неверный email или пароль";
     }
+
+    $stmt->close();
 }
+
+$mysqli->close();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,13 +56,13 @@ else {
 <body class="black">
     <div class="container">
         <h2>Login</h2>
-        <form action="programs/index.php" method="post" class="vhod">
+        <form action="login.php" method="post" class="vhod">
             <input type="email" name="email" placeholder="Email" required><br>
             <input type="password" name="password" placeholder="Password" required><br>
             <button type="submit" class="log">Login</button>
         </form>
+        <p><?php echo $error; ?></p>
         <p>Don't have an account? <a href="registration.php">Register</a></p>
     </div>
-    
 </body>
 </html>
