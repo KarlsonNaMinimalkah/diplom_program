@@ -31,8 +31,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             
-            header("Location: /диплом/programs/index.php");
-            exit();
+            if ($_SESSION['user_id'] == 5) {
+                header("Location: /диплом/programs/sborchik.php");
+                exit();
+            } else {
+                header("Location: /диплом/programs/index.php");
+                exit();
+            }
         } else {
             $error = "Неверный email или пароль";
         }

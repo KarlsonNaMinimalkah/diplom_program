@@ -1,52 +1,73 @@
 <?php
-// Проверяем, получены ли данные из формы
-if (isset($_POST['productId']) && isset($_POST['selectedSize'])) {
-    // Получаем данные из формы
-    $productId = $_POST['productId'];
-    $selectedSize = $_POST['selectedSize'];
+session_start();
 
-    // Подключение к базе данных
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "WorldOfCustomClothing";
+// Проверка, залогинен ли пользователь
+if (!isset($_SESSION['user_id'])) {
+    echo '<div class="error-message">Пользователь не залогинен</div>';
+    exit();
+}
 
-    // Создание соединения
-    $conn = new mysqli($servername, $username, $password, $dbname);
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "WorldOfCustomClothing";
 
-    // Проверка соединения
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+// Создание подключения
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-    // SQL запрос для выборки данных о продукте
-    $sql = "SELECT * FROM products WHERE ID = $productId";
-    $result = $conn->query($sql);
+// Проверка соединения
+if ($conn->connect_error) {
+    echo '<div class="error-message">Ошибка соединения: ' . $conn->connect_error . '</div>';
+    exit();
+}
 
-    if ($result->num_rows > 0) {
-        // Получение данных о продукте
-        $row = $result->fetch_assoc();
+// Получение информации о пользователе по user_id из сессии
+$user_id = $_SESSION['user_id'];
 
-        // Определение status_id
-        $status_id = ($row['quantity_' . $selectedSize] > 0) ? 1 : 2;
+// Обработка добавления в корзину
+if (isset($_GET['productId']) && isset($_GET['selectedSize'])) {
+    $productId = $_GET['productId'];
+    $selectedSize = $_GET['selectedSize'];
+    $quantity = 1;  // Или вы можете использовать $_GET['quantity'] если есть это поле
+    $status_id = 1;
+    $custom_id = 1;
+    
+    $productSql = "SELECT * FROM products WHERE ID = $productId";
+    $productResult = $conn->query($productSql);
+    if ($productResult->num_rows > 0) {
+        $productRow = $productResult->fetch_assoc();
 
-        // SQL запрос для вставки данных в таблицу cart
-        $insertSql = "INSERT INTO cart (image, name, description, price, quantity, size_id, custom_id, status_id)
-                      VALUES ('{$row['image']}', '{$row['name']}', '{$row['description']}', '{$row['price']}', 1, $selectedSize, 1, $status_id)";
+        // Добавляем товар в корзину в сессии
+        $_SESSION['cart'][] = array(
+            'id' => $productId,
+            'image' => $productRow['image'],
+            'name' => $productRow['name'],
+            'description' => $productRow['description'],
+            'price' => $productRow['price'],
+            'quantity' => $quantity
+        );
 
-        if ($conn->query($insertSql) === TRUE) {
-            echo "success";
+        // Вставка данных в таблицу cart
+        $cartSql = "INSERT INTO cart (image, name, description, price, quantity, size_id, custom_id, status_id, user_id)
+                    VALUES ('{$productRow['image']}', '{$productRow['name']}', '{$productRow['description']}', {$productRow['price']}, $quantity, $selectedSize, $custom_id, $status_id, $user_id)";
+
+        if ($conn->query($cartSql) === TRUE) {
+            // Получение количества товаров в корзине
+            $cartCountSql = "SELECT COUNT(*) AS cartCount FROM cart WHERE user_id = $user_id";
+            $cartCountResult = $conn->query($cartCountSql);
+            $cartCount = $cartCountResult->fetch_assoc()['cartCount'];
+
+            // Формирование HTML-ответа
+            $response = '<div class="success-message">Товар успешно добавлен в корзину</div>';
+            $response .= '<div>Количество товаров в корзине: ' . $cartCount . '</div>';
+            echo $response;
         } else {
-            echo "error";
+            echo '<div class="error-message">Ошибка: ' . $conn->error . '</div>';
         }
     } else {
-        echo "Продукт с ID $productId не найден";
+        echo '<div class="error-message">Товар не найден</div>';
     }
-
-    // Закрытие соединения с базой данных
-    $conn->close();
 } else {
-    // Если данные не получены, выводим сообщение об ошибке
-    echo "Ошибка: Данные о товаре не получены.";
+    echo '<div class="error-message">Неправильные параметры запроса</div>';
 }
-?>
+
