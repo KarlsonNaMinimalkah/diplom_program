@@ -18,64 +18,59 @@ if ($conn->connect_error) {
 }
 
 $notification = "";
-$orderDetails = [];
-
-if (isset($_GET['cartId'])) {
-    $cartId = $_GET['cartId'];
-    $sql = "SELECT * FROM cart WHERE id = ? AND user_id = ?";
-    $stmt = $conn->prepare($sql);
-    if ($stmt === false) {
-        die("Error preparing statement: " . $conn->error);
-    }
-    $stmt->bind_param("ii", $cartId, $_SESSION['user_id']);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $cartItem = $result->fetch_assoc();
-    $stmt->close();
-}
 
 if (isset($_POST['completeOrder'])) {
-    $cartId = $_POST['cartId'];
+    $cartItem = $_SESSION['cartItem'];
     $fullName = $_POST['fullName'];
     $email = $_POST['email'];
+    $orderDate = date('Y-m-d H:i:s'); // Получение текущей даты и времени
 
-    // Вставка данных в таблицу orders
-    $insertSql = "INSERT INTO orders (image, name, description, price, quantity, size_id, custom_id, status_id, user_id, full_name, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($insertSql);
+    // Вставка данных о заказе в таблицу orders
+    $insertOrderSql = "INSERT INTO orders (image, name, description, price, quantity, size_id, custom_id, status_id, user_id, full_name, email, order_date) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $conn->prepare($insertOrderSql);
     if ($stmt === false) {
         die("Error preparing statement: " . $conn->error);
     }
-    $stmt->bind_param("sssdiiiiiss", $cartItem['image'], $cartItem['name'], $cartItem['description'], $cartItem['price'], $cartItem['quantity'], $cartItem['size_id'], $cartItem['custom_id'], $cartItem['status_id'], $_SESSION['user_id'], $fullName, $email);
-    $stmt->execute();
-    $stmt->close();
+    $stmt->bind_param(
+        "sssdiisiisss",
+        $cartItem['image'], 
+        $cartItem['name'], 
+        $cartItem['description'], 
+        $cartItem['price'], 
+        $cartItem['quantity'], 
+        $cartItem['size_id'], 
+        $cartItem['custom_id'], 
+        $cartItem['status_id'], 
+        $_SESSION['user_id'], 
+        $fullName, 
+        $email, 
+        $orderDate
+    );
 
-    // Удаление товара из корзины
-    $deleteSql = "DELETE FROM cart WHERE id = ? AND user_id = ?";
-    $stmt = $conn->prepare($deleteSql);
-    if ($stmt === false) {
-        die("Error preparing statement: " . $conn->error);
+    if ($stmt->execute()) {
+        // Обновление статуса товара в корзине на "3"
+        $updateCartSql = "UPDATE cart SET status_id = 3 WHERE id = ? AND user_id = ?";
+        $stmt = $conn->prepare($updateCartSql);
+        if ($stmt === false) {
+            die("Error preparing statement: " . $conn->error);
+        }
+        $stmt->bind_param("ii", $cartItem['id'], $_SESSION['user_id']);
+        $stmt->execute();
+        $stmt->close();
+
+        // Очистка сессии
+        unset($_SESSION['cartItem']);
+
+        $notification = "Заказ успешно завершен!";
+    } else {
+        $notification = "Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.";
     }
-    $stmt->bind_param("ii", $cartId, $_SESSION['user_id']);
-    $stmt->execute();
-    $stmt->close();
-
-    $notification = "Ваш заказ успешно оформлен!";
-    $orderDetails = [
-        'image' => $cartItem['image'],
-        'name' => $cartItem['name'],
-        'description' => $cartItem['description'],
-        'price' => $cartItem['price'],
-        'quantity' => $cartItem['quantity'],
-        'size_id' => $cartItem['size_id'],
-        'custom_id' => $cartItem['custom_id'],
-        'status_id' => $cartItem['status_id'],
-        'user_id' => $_SESSION['user_id'],
-        'full_name' => $fullName,
-        'email' => $email
-    ];
 }
 
+$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -98,19 +93,19 @@ if (isset($_POST['completeOrder'])) {
     <?php if ($notification): ?>
         <div class="notification"><?php echo $notification; ?></div>
     <?php endif; ?>
-    <?php if (isset($cartItem)): ?>
+    <?php if (isset($_SESSION['cartItem'])): ?>
         <div class="product">
-            <img src="<?php echo $cartItem['image']; ?>" alt="<?php echo $cartItem['name']; ?>">
-            <h2><?php echo $cartItem['name']; ?></h2>
-            <p>Цена: <?php echo $cartItem['price']; ?> руб.</p>
-            <p>Описание: <?php echo $cartItem['description']; ?></p>
-            <p>Количество: <?php echo $cartItem['quantity']; ?></p>
-            <p>Кастом: <?php echo $cartItem['custom_id']; ?></p>
-            <p>Размер: <?php echo $cartItem['size_id']; ?></p>
-            <p>Статус: <?php echo $cartItem['status_id']; ?></p>
+            <img src="<?php echo $_SESSION['cartItem']['image']; ?>" alt="<?php echo $_SESSION['cartItem']['name']; ?>">
+            <h2><?php echo $_SESSION['cartItem']['name']; ?></h2>
+            <p>Цена: <?php echo $_SESSION['cartItem']['price']; ?> руб.</p>
+            <p>Описание: <?php echo $_SESSION['cartItem']['description']; ?></p>
+            <p>Количество: <?php echo $_SESSION['cartItem']['quantity']; ?></p>
+            <p>Кастом: <?php echo $_SESSION['cartItem']['custom_id']; ?></p>
+            <p>Размер: <?php echo $_SESSION['cartItem']['size_id']; ?></p>
+            <p>Статус: <?php echo $_SESSION['cartItem']['status_id']; ?></p>
         </div>
         <form action="order.php" method="post">
-            <input type="hidden" name="cartId" value="<?php echo $cartItem['id']; ?>">
+            <input type="hidden" name="cartId" value="<?php echo $_SESSION['cartItem']['id']; ?>">
             <label for="fullName">ФИО:</label>
             <input type="text" id="fullName" name="fullName" required>
             <label for="email">Почта:</label>
@@ -125,22 +120,5 @@ if (isset($_POST['completeOrder'])) {
 <footer>
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>
-
-<?php if (!empty($orderDetails)): ?>
-    <div class="order-summary">
-        <h2>Детали заказа:</h2>
-        <img src="<?php echo $orderDetails['image']; ?>" alt="<?php echo $orderDetails['name']; ?>">
-        <p>Название: <?php echo $orderDetails['name']; ?></p>
-        <p>Описание: <?php echo $orderDetails['description']; ?></p>
-        <p>Цена: <?php echo $orderDetails['price']; ?> руб.</p>
-        <p>Количество: <?php echo $orderDetails['quantity']; ?></p>
-        <p>Размер: <?php echo $orderDetails['size_id']; ?></p>
-        <p>Кастом: <?php echo $orderDetails['custom_id']; ?></p>
-        <p>Статус: <?php echo $orderDetails['status_id']; ?></p>
-        <p>ФИО: <?php echo $orderDetails['full_name']; ?></p>
-        <p>Почта: <?php echo $orderDetails['email']; ?></p>
-        <p>Дата заказа: <?php echo date("Y-m-d H:i:s"); ?></p>
-    </div>
-<?php endif; ?>
 </body>
 </html>

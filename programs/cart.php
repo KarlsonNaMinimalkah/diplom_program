@@ -1,21 +1,6 @@
 <?php
 session_start();
 
-// Предположим, что $cartItem содержит данные о товаре из базы данных или другого источника
-$cartItem = [
-    'id' => 1,
-    'image' => 'path/to/image.jpg',
-    'name' => 'Название товара',
-    'description' => 'Описание товара',
-    'price' => 1000.00,
-    'quantity' => 1,
-    'size_id' => 2,
-    'custom_id' => 3,
-    'status_id' => 1, // или другие данные, необходимые для оформления заказа
-];
-
-$_SESSION['cartItem'] = $cartItem;
-
 // Проверка, авторизован ли пользователь
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -104,7 +89,12 @@ $result = $stmt->get_result();
 </head>
 <body>
 <header>
-    <!-- ... (ваш код для заголовка) -->
+    <h1>Castom World</h1>
+    <nav>
+        <a href="index.php">Главная</a>
+        <a href="catalog.php">Каталог</a>
+        <a href="contacts.php">Контакты</a>
+    </nav>
 </header>
 <main>
     <?php
@@ -125,11 +115,11 @@ $result = $stmt->get_result();
                         <button type="submit" name="removeFromCart">Удалить</button>
                     </form>
 
-                    <!-- Кнопка оформления заказа -->
-                    <form action="order.php" method="get" style="display: inline;">
+                    <form action="order.php" method="post" style="display: inline;">
                         <input type="hidden" name="cartId" value="<?php echo $row['cart_id']; ?>">
                         <button type="submit" name="placeOrder">Оформить заказ</button>
                     </form>
+
                 </div>
             </div>
             <?php
