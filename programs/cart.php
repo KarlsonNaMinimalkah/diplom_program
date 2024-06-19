@@ -31,35 +31,7 @@ if (isset($_POST['removeFromCart'])) {
     $stmt->close();
 }
 
-$cartCountSql = "SELECT COUNT(*) as count FROM cart WHERE user_id = ?";
-$stmt = $conn->prepare($cartCountSql);
-if ($stmt === false) {
-    die("Error preparing statement: " . $conn->error);
-}
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$countResult = $stmt->get_result();
-$cartCount = $countResult->fetch_assoc()['count'];
-$stmt->close();
-
-$userSql = "SELECT * FROM users WHERE id = ?";
-$stmt = $conn->prepare($userSql);
-if ($stmt === false) {
-    die("Error preparing statement: " . $conn->error);
-}
-$stmt->bind_param("i", $_SESSION['user_id']);
-$stmt->execute();
-$userResult = $stmt->get_result();
-$user = $userResult->fetch_assoc();
-$stmt->close();
-
-if (isset($_POST['logout'])) {
-    session_unset();
-    session_destroy();
-    header("Location: login.php");
-    exit();
-}
-
+// Получение всех товаров из корзины с учетом статуса 1
 $sql = "SELECT cart.id AS id, cart.image, cart.name, cart.price, custom.name AS custom_name, size.size AS size_name, 
         cart.custom_id, cart.size_id 
         FROM cart 
@@ -93,6 +65,24 @@ if ($result->num_rows > 0) {
     $notification = "Корзина пуста или нет товаров с доступным статусом.";
 }
 
+// Запрос на количество товаров в корзине с учетом статуса 1
+$cartCountSql = "SELECT COUNT(*) as count FROM cart WHERE user_id = ? AND status_id = 1";
+$stmt = $conn->prepare($cartCountSql);
+if ($stmt === false) {
+    die("Error preparing statement: " . $conn->error);
+}
+$stmt->bind_param("i", $_SESSION['user_id']);
+$stmt->execute();
+$countResult = $stmt->get_result();
+$cartCount = $countResult->fetch_assoc()['count'];
+$stmt->close();
+
+// Вычисление общей суммы всех товаров в корзине с учетом статуса 1
+$totalPrice = 0;
+foreach ($cartItems as $item) {
+    $totalPrice += $item['price'];
+}
+
 $conn->close();
 ?>
 
@@ -103,6 +93,12 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Корзина</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .total-info {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -126,13 +122,11 @@ $conn->close();
                 <p>Цена: <?php echo $item['price']; ?> руб.</p>
                 <p>Кастом: <?php echo $item['custom_name']; ?></p>
                 <p>Размер: <?php echo $item['size_name']; ?></p>
-
                 <div class="actions">
                     <form action="cart.php" method="post" style="display: inline;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="removeFromCart">Удалить</button>
                     </form>
-
                     <form action="order.php" method="post" style="display: inline;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="placeOrder">Оформить заказ</button>
@@ -143,10 +137,14 @@ $conn->close();
     <?php else: ?>
         <p>Корзина пуста или нет товаров с доступным статусом.</p>
     <?php endif; ?>
+    <div class="total-info">
+        <p>Общее количество товаров в корзине: <?php echo $cartCount; ?></p>
+        <p>Общая сумма всех товаров: <?php echo $totalPrice; ?> руб.</p>
+    </div>
 </main>
 <footer>
+    
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>
 </body>
 </html>
-

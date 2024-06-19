@@ -73,10 +73,10 @@ if (isset($_POST['placeOrder'])) {
             // Очистка данных о корзине в сессии, если это необходимо
             unset($_SESSION['cartItem']);
 
-            $notification = "Заказ успешно оформлен!";
-        } else {
-            $notification = "Ошибка при оформлении заказа. Пожалуйста, попробуйте снова.";
-        }
+            // Успешно оформлен заказ, перенаправляем на страницу корзины с уведомлением
+            header("Location: cart.php?notification=Заказ успешно оформлен!");
+            exit();
+        } 
     } else {
         $notification = "Товар не найден в вашей корзине.";
     }
@@ -106,28 +106,24 @@ $conn->close();
     <?php if ($notification): ?>
         <div class="notification"><?php echo $notification; ?></div>
     <?php endif; ?>
-    <?php if (isset($_POST['placeOrder']) && $notification === "Товар не найден в вашей корзине."): ?>
-        <p><?php echo $notification; ?></p>
-    <?php else: ?>
-        <div class="product">
-            <img src="<?php echo $cartItem['image']; ?>" alt="<?php echo $cartItem['name']; ?>">
-            <h2><?php echo $cartItem['name']; ?></h2>
-            <p>Цена: <?php echo $cartItem['price']; ?> руб.</p>
-            <p>Описание: <?php echo $cartItem['description']; ?></p>
-            <p>Количество: <?php echo $cartItem['quantity']; ?></p>
-            <p>Кастом: <?php echo $cartItem['custom_id']; ?></p>
-            <p>Размер: <?php echo $cartItem['size_id']; ?></p>
-        </div>
-        <form action="order.php" method="post">
-            <input type="hidden" name="cartId" value="<?php echo $cartId; ?>">
-            <label for="fullName">ФИО:</label>
-            <input type="text" id="fullName" name="fullName" required>
-            <label for="email">Почта:</label>
-            <input type="email" id="email" name="email" required>
-            <button type="submit" name="placeOrder">Завершить</button>
-            <button type="button" onclick="window.location.href='cart.php'">Вернуться</button>
-        </form>
-    <?php endif; ?>
+    <div class="product">
+        <img src="<?php echo $cartItem['image']; ?>" alt="<?php echo $cartItem['name']; ?>">
+        <h2><?php echo $cartItem['name']; ?></h2>
+        <p>Цена: <?php echo $cartItem['price']; ?> руб.</p>
+        <p>Описание: <?php echo $cartItem['description']; ?></p>
+        <p>Количество: <?php echo $cartItem['quantity']; ?></p>
+        <p>Кастом: <?php echo $cartItem['custom_id']; ?></p>
+        <p>Размер: <?php echo $cartItem['size_id']; ?></p>
+    </div>
+    <form action="order.php" method="post">
+        <input type="hidden" name="cartId" value="<?php echo $cartId; ?>">
+        <label for="fullName">ФИО:</label>
+        <input type="text" id="fullName" name="fullName" required>
+        <label for="email">Почта:</label>
+        <input type="email" id="email" name="email" required>
+        <button type="submit" name="placeOrder">Завершить</button>
+        <button type="button" onclick="window.location.href='cart.php'">Вернуться</button>
+    </form>
 </main>
 <footer>
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
