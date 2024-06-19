@@ -52,15 +52,7 @@ if (isset($_GET['productId']) && isset($_GET['selectedSize'])) {
                     VALUES ('{$productRow['image']}', '{$productRow['name']}', '{$productRow['description']}', {$productRow['price']}, $quantity, $selectedSize, $custom_id, $status_id, $user_id)";
 
         if ($conn->query($cartSql) === TRUE) {
-            // Получение количества товаров в корзине
-            $cartCountSql = "SELECT COUNT(*) AS cartCount FROM cart WHERE user_id = $user_id";
-            $cartCountResult = $conn->query($cartCountSql);
-            $cartCount = $cartCountResult->fetch_assoc()['cartCount'];
-
-            // Формирование HTML-ответа
-            $response = '<div class="success-message">Товар успешно добавлен в корзину</div>';
-            $response .= '<div>Количество товаров в корзине: ' . $cartCount . '</div>';
-            echo $response;
+            echo '<div class="success-message">Товар успешно добавлен в корзину</div>';
         } else {
             echo '<div class="error-message">Ошибка: ' . $conn->error . '</div>';
         }
@@ -70,3 +62,4 @@ if (isset($_GET['productId']) && isset($_GET['selectedSize'])) {
 } else {
     echo '<div class="error-message">Неправильные параметры запроса</div>';
 }
+?>

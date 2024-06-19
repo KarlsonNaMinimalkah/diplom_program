@@ -35,8 +35,8 @@ if (isset($_POST['removeFromCart'])) {
 $sql = "SELECT cart.id AS id, cart.image, cart.name, cart.price, custom.name AS custom_name, size.size AS size_name, 
         cart.custom_id, cart.size_id 
         FROM cart 
-        JOIN custom ON cart.custom_id = custom.id 
-        JOIN size ON cart.size_id = size.id 
+        LEFT JOIN custom ON cart.custom_id = custom.id 
+        LEFT JOIN size ON cart.size_id = size.id 
         WHERE cart.user_id = ? AND cart.status_id = 1"; // Добавлено условие на status_id
 $stmt = $conn->prepare($sql);
 if ($stmt === false) {
@@ -106,7 +106,7 @@ $conn->close();
     <nav>
         <a href="index.php">Главная</a>
         <a href="catalog.php">Каталог</a>
-        <a href="contacts.php">Контакты</a>
+        <a href="user_order.php">Заказы</a>
     </nav>
 </header>
 <main>
@@ -122,20 +122,25 @@ $conn->close();
                 <p>Цена: <?php echo $item['price']; ?> руб.</p>
                 <p>Кастом: <?php echo $item['custom_name']; ?></p>
                 <p>Размер: <?php echo $item['size_name']; ?></p>
-                <div class="actions" style="display: flex;">
-                    <form action="cart.php" method="post" style="display: inline; margin-right: 2px;">
+                <div class="actions" style="display: flex; flex-direction: column; align-items: flex-start;">
+                <div style="display: flex; width: 100%;">
+                    <form action="cart.php" method="post" style="flex: 1; margin-right: 2px;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
-                        <button type="submit" name="removeFromCart">Удалить</button>
+                        <button type="submit" name="removeFromCart" style="width: 100%;">Удалить</button>
                     </form>
-                    <form action="order.php" method="post" style="display: inline;">
+                    
+                    <form action="select_custom.php" method="get" style="flex: 1; margin-left: 2px;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
-                        <button type="submit" name="placeOrder">Оформить заказ</button>
-                    </form>
-                    <form action="select_custom.php" method="get" style="display: inline; margin-left: 2px;">
-                        <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
-                        <button type="submit" name="selectCustom">Кастом</button>
+                        <button type="submit" name="selectCustom" style="width: 100%;">Кастом</button>
                     </form>
                 </div>
+                
+                <form action="order.php" method="post" style="width: calc(100% - 4px); margin-top: 5px;">
+                    <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
+                    <button type="submit" name="placeOrder" style="width: 100%;">Оформить заказ</button>
+                </form>
+            </div>
+
             </div>
         <?php endforeach; ?>
     <?php else: ?>

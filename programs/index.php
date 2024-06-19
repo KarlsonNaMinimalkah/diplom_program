@@ -1,4 +1,8 @@
 <?php
+include('config.php');
+?>
+<?php
+
 session_start();
 
 // Проверка, залогинен ли пользователь
@@ -35,6 +39,21 @@ $user = $user_result->fetch_assoc();
     <title>Главная страница</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .product {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .product img {
+            max-width: 700px;
+            max-height: 700px;
+            margin-right: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 <header>
@@ -42,17 +61,19 @@ $user = $user_result->fetch_assoc();
     <nav>
         <a href="index.php">Главная</a>
         <a href="catalog.php">Каталог</a>
-        <a href="contacts.php">Контакты</a>
+        <a href="user_order.php">Заказы</a>
     </nav>
     <div class="header-bottom">
         <div class="search-bar">
-            <input type="text" placeholder="Поиск">
-            <button>Поиск</button>
+            <form method="GET">
+                <input type="text" name="search" placeholder="Поиск" value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+                <button type="submit">Найти</button>
+            </form>
         </div>
         <div class="user-actions">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <div class="dropdown">
-                    <span>Привет, <?php echo $user['name']; ?></span>
+                    <span>Привет, <?php echo $_SESSION['username']; ?></span>
                     <div class="dropdown-content">
                         <form method="post" action="../login.php"> <!-- Форма для выхода -->
                             <button type="submit" name="logout">Выход</button>
@@ -71,8 +92,11 @@ $user = $user_result->fetch_assoc();
 <div id="notification"></div>
 <main>
     <?php
+    // Используемые переменные для поиска
+    $search = isset($_GET['search']) ? $_GET['search'] : '';
+
     // SQL запрос для получения продуктов
-    $sql = "SELECT * FROM products";
+    $sql = "SELECT * FROM products WHERE name LIKE '%$search%' OR description LIKE '%$search%'";
     $result = $conn->query($sql);
     // Проверка наличия результатов
     if ($result->num_rows > 0) {
@@ -92,12 +116,12 @@ $user = $user_result->fetch_assoc();
                     <button class="size-btn" data-size="2">L</button>
                     <button class="size-btn" data-size="3">XL</button>
                 </p>
-                <input type="hidden" class="selected-size" name="selected-size" value="">
+                <input type="hidden" class="selected-size" name="selected-size" value="1"> <!-- По умолчанию размер M -->
                 <p>Status: <?php echo $status; ?></p>
                 <p>ID товара: <?php echo $row['ID']; ?></p> <!-- Выводим ID товара -->
                 <form class="add-to-cart-form">
                     <input type="hidden" name="productId" value="<?php echo $row['ID']; ?>">
-                    <input type="hidden" class="selected-size" name="selectedSize" value="">
+                    <input type="hidden" class="selected-size" name="selectedSize" value="1"> <!-- По умолчанию размер M -->
                     <input type="hidden" name="quantity" value="1">
                     <button type="button" class="add-to-cart-button">Добавить в корзину</button>
                 </form>
@@ -125,7 +149,7 @@ $user = $user_result->fetch_assoc();
                 type: 'GET',  // Используем метод GET
                 url: url,
                 success: function(response) {
-                    $('#notification').html(response);
+                    $('#notification').html('<div class="success-message">Товар успешно добавлен в корзину</div>');
                 },
                 error: function() {
                     $('#notification').html('<div class="error-message">Ошибка при отправке запроса</div>');

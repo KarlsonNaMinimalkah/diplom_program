@@ -118,11 +118,14 @@ $conn->close();
     <form action="order.php" method="post">
         <input type="hidden" name="cartId" value="<?php echo $cartId; ?>">
         <label for="fullName">ФИО:</label>
-        <input type="text" id="fullName" name="fullName" required>
+        <input type="text" id="fullName" name="fullName" required style="width:90%;height:30px;">
+        <br>
         <label for="email">Почта:</label>
-        <input type="email" id="email" name="email" required>
-        <button type="submit" name="placeOrder">Завершить</button>
-        <button type="button" onclick="window.location.href='cart.php'">Вернуться</button>
+        <input type="email" id="email" name="email" required style="width:90%;height:30px;">
+        <br>
+        <p><button type="submit" name="placeOrder" style="width:45%;">Завершить</button>
+        <button type="button" onclick="window.location.href='cart.php'" style="width:45%;">Вернуться</button>
+        </p>
     </form>
 </main>
 <footer>

@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Проверка, залогинен ли пользователь
-if (!isset($_SESSION['user_id'])) {
+// Проверка, залогинен ли специальный пользователь с id 10
+if (!isset($_SESSION['special_user_id']) || $_SESSION['special_user_id'] != 10) {
     header("Location: ../login.php");
     exit();
 }
@@ -20,33 +20,16 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Получение информации о пользователе по user_id из сессии
-$user_id = $_SESSION['user_id'];
-$user_sql = "SELECT * FROM users WHERE id = $user_id";
-$user_result = $conn->query($user_sql);
-$user = $user_result->fetch_assoc();
-
 // Функция для отправки писем
 function sendEmail($to, $subject, $message) {
     $headers = "From: no-reply@worldofcustomclothing.com";
     mail($to, $subject, $message, $headers);
 }
 
-// Обработка удаления заказа
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['deleteOrder'])) {
-    $orderId = $_POST['orderId'];
-    $orderEmail = $_POST['orderEmail'];
-
-    // Удаление заказа
-    $delete_sql = "DELETE FROM orders WHERE id = $orderId";
-    if ($conn->query($delete_sql) === TRUE) {
-        // Отправка письма о том, что заказ был отменен
-        $subject = "Ваш заказ был отменен";
-        $message = "Ваш заказ с ID $orderId был отменен.";
-        sendEmail($orderEmail, $subject, $message);
-    } else {
-        echo "Error: " . $conn->error;
-    }
+// Генерация случайного 8-значного пинкода
+function generatePincode() {
+    // Генерируем случайное число от 10000000 до 99999999
+    return mt_rand(10000000, 99999999);
 }
 
 // Обработка принятия заказа
@@ -54,12 +37,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acceptOrder'])) {
     $orderId = $_POST['orderId'];
     $orderEmail = $_POST['orderEmail'];
 
-    // Обновление статуса заказа
-    $update_sql = "UPDATE orders SET status_id = 5 WHERE id = $orderId";
+    // Генерируем пинкод
+    $pincode = generatePincode();
+
+    // Обновляем статус заказа и сохраняем пинкод
+    $update_sql = "UPDATE orders SET status_id = 5, password_cod = $pincode WHERE id = $orderId";
     if ($conn->query($update_sql) === TRUE) {
-        // Отправка письма о том, что заказ был принят
+        // Отправляем письмо о принятии заказа
         $subject = "Ваш заказ был принят";
-        $message = "Ваш заказ с ID $orderId был принят. Ожидайте готовности.";
+        $message = "Ваш заказ с ID $orderId был принят. Ожидайте готовности. Ваш пинкод: $pincode";
         sendEmail($orderEmail, $subject, $message);
     } else {
         echo "Error: " . $conn->error;
@@ -92,21 +78,23 @@ $sizes = [
     <style>
         .orders-container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
         .order-card {
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 20px;
             margin: 20px;
-            width: 300px;
+            min-width: 300px; /* Фиксированная ширина для карточек */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            flex: 1 1 calc(33% - 40px);
             box-sizing: border-box;
+            flex: 0 0 auto; /* Карточки не будут сжиматься */
         }
         .order-card img {
             width: 100%;
+            height: 200px; /* Фиксированная высота для изображений */
+            object-fit: cover; /* Изображение сохраняет пропорции, но обрезается, чтобы заполнить блок */
             border-radius: 10px;
         }
         .order-card h3 {
@@ -148,41 +136,38 @@ $sizes = [
         <div class="user-actions">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <div class="dropdown">
-                    <span>Привет, <?php echo $user['name']; ?></span>
+                <span>Привет, <?php echo $_SESSION['special_username']; ?></span>
                     <div class="dropdown-content">
                         <form method="post" action="../login.php"> <!-- Форма для выхода -->
                             <button type="submit" name="logout">Выход</button>
                         </form>
-                        
                     </div>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </header>
-<main>
+
     <h2>Список заказов</h2>
     <div class="orders-container">
         <?php if ($orders_result->num_rows > 0): ?>
             <?php while ($order = $orders_result->fetch_assoc()): ?>
                 <div class="order-card">
-                
                     <img src="<?php echo $order['image']; ?>" alt="<?php echo $order['name']; ?>">
                     <h3><?php echo $order['name']; ?></h3>
                     <p><strong>Описание:</strong> <?php echo $order['description']; ?></p>
                     <p><strong>Цена:</strong> <?php echo $order['price']; ?> руб.</p>
                     <p><strong>Количество:</strong> <?php echo $order['quantity']; ?></p>
-                    <h1><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></h1>
-                    <h1><strong>ФИО:</strong> <?php echo $order['full_name']; ?></h1>
+                    <p><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></p>
+                    <p><strong>ФИО:</strong> <?php echo $order['full_name']; ?></p>
                     <p><strong>Почта:</strong> <?php echo $order['email']; ?></p>
                     <p><strong>Дата оформления:</strong> <?php echo $order['order_date']; ?></p>
                     <p><strong>Кастомизация:</strong> <?php echo $order['custom_name']; ?></p>
                     <img src="<?php echo $order['custom_image']; ?>" alt="<?php echo $order['custom_name']; ?>">
                     <p><strong>Время работы:</strong> <?php echo $order['custom_work_time']; ?> часов</p>
-                    <h1><strong>id:</strong> <?php echo $order['id']; ?> </h1>
+                    
                     <div class="actions">
-                        
-                        <form action="" method="post" style="display:inline;">
+                        <form action="" method="post">
                             <input type="hidden" name="orderId" value="<?php echo $order['id']; ?>">
                             <input type="hidden" name="orderEmail" value="<?php echo $order['email']; ?>">
                             <button type="submit" name="acceptOrder" class="accept">Завершить сборку</button>
@@ -194,7 +179,7 @@ $sizes = [
             <p>Нет доступных заказов.</p>
         <?php endif; ?>
     </div>
-</main>
+
 <footer>
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>

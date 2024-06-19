@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Проверка, залогинен ли пользователь
-if (!isset($_SESSION['user_id'])) {
+// Проверка, залогинен ли специальный пользователь с id 10
+if (!isset($_SESSION['special_user_id']) || $_SESSION['special_user_id'] != 10) {
     header("Location: ../login.php");
     exit();
 }
@@ -92,21 +92,23 @@ $sizes = [
     <style>
         .orders-container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
         .order-card {
             border: 1px solid #ccc;
             border-radius: 10px;
             padding: 20px;
             margin: 20px;
-            width: 300px;
+            width: 300px; /* Фиксированная ширина для карточек */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            flex: 1 1 calc(33% - 40px);
             box-sizing: border-box;
+            flex: 0 0 auto; /* Карточки не будут сжиматься */
         }
         .order-card img {
             width: 100%;
+            height: 200px; /* Фиксированная высота для изображений */
+            object-fit: cover; /* Изображение сохраняет пропорции, но обрезается, чтобы заполнить блок */
             border-radius: 10px;
         }
         .order-card h3 {
@@ -148,34 +150,31 @@ $sizes = [
         <div class="user-actions">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <div class="dropdown">
-                    <span>Привет, <?php echo $user['name']; ?></span>
+                <span>Привет, <?php echo $_SESSION['special_username']; ?></span>
                     <div class="dropdown-content">
                         <form method="post" action="../login.php"> <!-- Форма для выхода -->
                             <button type="submit" name="logout">Выход</button>
                         </form>
-                        
                     </div>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 </header>
-<main>
+
     <h2>Список заказов</h2>
     <div class="orders-container">
         <?php if ($orders_result->num_rows > 0): ?>
             <?php while ($order = $orders_result->fetch_assoc()): ?>
                 <div class="order-card">
-                
                     <img src="<?php echo $order['image']; ?>" alt="<?php echo $order['name']; ?>">
                     <h3><?php echo $order['name']; ?></h3>
                     <p><strong>Количество:</strong> <?php echo $order['quantity']; ?></p>
                     <p><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></p>
                     <p><strong>Дата оформления:</strong> <?php echo $order['order_date']; ?></p>
+                    <img src="<?php echo $order['custom_image']; ?>" alt="<?php echo $order['name']; ?>">
                     <p><strong>Кастомизация:</strong> <?php echo $order['custom_name']; ?></p>
-                    <img src="<?php echo $order['custom_image']; ?>" alt="<?php echo $order['custom_name']; ?>">
                     <p><strong>Время работы:</strong> <?php echo $order['custom_work_time']; ?> часов</p>
-                    
                     <div class="actions">
                         <form action="" method="post" style="display:inline;">
                             <input type="hidden" name="orderId" value="<?php echo $order['id']; ?>">
@@ -194,7 +193,7 @@ $sizes = [
             <p>Нет доступных заказов.</p>
         <?php endif; ?>
     </div>
-</main>
+
 <footer>
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>

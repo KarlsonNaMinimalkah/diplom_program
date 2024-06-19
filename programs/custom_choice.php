@@ -1,11 +1,21 @@
 <?php
+include('config.php');
+?>
+<?php
 session_start();
 
-// Подключение к базе данных
+// Проверка, залогинен ли пользователь
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../login.php");
+    exit();
+}
+
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "WorldOfCustomClothing";
+
+// Создание подключения
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Проверка соединения
@@ -13,12 +23,21 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Запрос к таблице с кастомами
-$sql = "SELECT * FROM custom";
-$result = $conn->query($sql);
+// Получение информации о пользователе по user_id из сессии
+$user_id = $_SESSION['user_id'];
+$user_sql = "SELECT * FROM users WHERE id = $user_id";
+$user_result = $conn->query($user_sql);
+$user = $user_result->fetch_assoc();
 
-// Закрытие соединения с базой данных
-$conn->close();
+// Запрос на получение всех кастомов
+$customs_sql = "SELECT * FROM custom";
+$customs_result = $conn->query($customs_sql);
+$customs = [];
+if ($customs_result->num_rows > 0) {
+    while ($row = $customs_result->fetch_assoc()) {
+        $customs[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -26,121 +45,91 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Выбор кастома</title>
+    <title>Заказы</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .custom-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px auto;
-            max-width: 800px;
-        }
-
         .custom-card {
-            background-color: #ffffff;
-            border: 1px solid #dddddd;
-            border-radius: 8px;
-            width: 300px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: inline-block;
+            vertical-align: top;
+            width: 30%;
+            cursor: pointer; /* Делаем курсор указателем для указания на кликабельность */
         }
-
-        .custom-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-content {
-            text-align: center;
-        }
-
-        .card-content img {
+        .custom-card img {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
         }
-
-        .card-content h2 {
-            margin-top: 10px;
-            font-size: 1.5rem;
-        }
-
-        .card-content p {
-            font-size: 1rem;
-            color: #666666;
-        }
-
-        .card-radio {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .card-radio input[type="radio"] {
-            display: none; /* Скрываем сам радиокнопку */
-        }
-
-        .card-radio label {
-            cursor: pointer;
-            padding: 8px 16px;
-            background-color: #007bff;
-            color: #ffffff;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-
-        .card-radio label:hover {
-            background-color: #0056b3;
-        }
-
-        .card-radio input[type="radio"]:checked + label {
-            background-color: #0056b3;
+        .selected {
+            border: 2px solid black; /* Стиль для подсветки */
         }
     </style>
 </head>
 <body>
-    <h1>Выбор кастома</h1>
-    <form action="cart.php" method="post">
-        <div class="custom-container">
-            <?php
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    ?>
-                    <div class="custom-card">
-                        <div class="card-content">
-                            <img src="<?php echo $row['image']; ?>" alt="<?php echo $row['name']; ?>">
-                            <h2><?php echo $row['name']; ?></h2>
-                            <p>Цена: <?php echo $row['price']; ?> руб.</p>
-                            <p>Время работы: <?php echo $row['work_time']; ?> ч.</p>
-                        </div>
-                        <div class="card-radio">
-                            <label>
-                                <input type="radio" name="custom_id" value="<?php echo $row['id']; ?>" <?php echo ($row['id'] == 1) ? 'checked' : ''; ?>>
-                                Выбрать
-                            </label>
-                        </div>
+<header>
+    <h1>Castom World</h1>
+    <nav>
+        <a href="index.php">Главная</a>
+        <a href="catalog.php">Каталог</a>
+        <a href="user_order.php">Заказы</a>
+    </nav>
+    <div class="header-bottom">
+        <div class="user-actions">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <div class="dropdown">
+                <span>Привет, <?php echo $_SESSION['username']; ?></span>
+                    <div class="dropdown-content">
+                        <form method="post" action="../login.php"> <!-- Форма для выхода -->
+                            <button type="submit" name="logout">Выход</button>
+                        </form>
+                        <a href="delete_account.php">Удалить аккаунт</a>
                     </div>
-                    <?php
-                }
-            } else {
-                echo "Нет записей о кастомах";
-            }
-            ?>
+                </div>
+            <?php endif; ?>
         </div>
-        <button type="submit">Выбрать</button>
-    </form>
+    </div>
+</header>
+<main>
+    <div class="custom-content">
+        <?php foreach ($customs as $custom): ?>
+            <div class="custom-card" data-custom-id="<?php echo $custom['id']; ?>">
+                <h3><?php echo $custom['name']; ?></h3>
+                <img src="<?php echo $custom['image']; ?>" alt="<?php echo $custom['name']; ?>">
+                <p>Среднее время выполнения: <?php echo $custom['work_time']; ?> дней</p>
+                <p>Цена: <?php echo $custom['price']; ?> руб.</p>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</main>
+<footer>
+    <p>Контакты: email@example.com | Телефон: +1234567890</p>
+</footer>
+
+<script>
+// Ждем загрузки DOM
+document.addEventListener("DOMContentLoaded", function() {
+    // Находим все карточки с классом "custom-card"
+    var cards = document.querySelectorAll('.custom-card');
+
+    // Для каждой карточки навешиваем обработчик клика
+    cards.forEach(function(card) {
+        card.addEventListener('click', function() {
+            // Снимаем подсветку со всех карточек
+            cards.forEach(function(c) {
+                c.classList.remove('selected');
+            });
+
+            // Добавляем подсветку на кликнутую карточку
+            this.classList.add('selected');
+        });
+    });
+});
+</script>
+
 </body>
 </html>
+
+<?php
+$conn->close();
+?>

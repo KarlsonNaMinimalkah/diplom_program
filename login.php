@@ -26,15 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        
+
         if ($password == $user["password"]) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            
-            if ($_SESSION['user_id'] == 10) {
+            if ($user['id'] == 10) {
+                $_SESSION['special_user_id'] = $user['id'];
+                $_SESSION['special_username'] = $user['username'];
                 header("Location: /диплом/programs/sborchik.php");
                 exit();
             } else {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
                 header("Location: /диплом/programs/index.php");
                 exit();
             }
