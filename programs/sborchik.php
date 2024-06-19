@@ -142,7 +142,7 @@ $sizes = [
     <nav>
         <a href="sborchik.php">Прием на сборку</a>
         <a href="sborka.php">Сборка</a>
-        <a href="contacts.php">Выдача</a>
+        <a href="vidacha.php">Выдача</a>
     </nav>
     <div class="header-bottom">
         <div class="user-actions">
@@ -153,7 +153,7 @@ $sizes = [
                         <form method="post" action="../login.php"> <!-- Форма для выхода -->
                             <button type="submit" name="logout">Выход</button>
                         </form>
-                        <a href="delete_account.php">Удалить аккаунт</a>
+                        
                     </div>
                 </div>
             <?php endif; ?>
@@ -169,17 +169,13 @@ $sizes = [
                 
                     <img src="<?php echo $order['image']; ?>" alt="<?php echo $order['name']; ?>">
                     <h3><?php echo $order['name']; ?></h3>
-                    <p><strong>Описание:</strong> <?php echo $order['description']; ?></p>
-                    <p><strong>Цена:</strong> <?php echo $order['price']; ?> руб.</p>
                     <p><strong>Количество:</strong> <?php echo $order['quantity']; ?></p>
                     <p><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></p>
-                    <p><strong>ФИО:</strong> <?php echo $order['full_name']; ?></p>
-                    <p><strong>Почта:</strong> <?php echo $order['email']; ?></p>
                     <p><strong>Дата оформления:</strong> <?php echo $order['order_date']; ?></p>
                     <p><strong>Кастомизация:</strong> <?php echo $order['custom_name']; ?></p>
                     <img src="<?php echo $order['custom_image']; ?>" alt="<?php echo $order['custom_name']; ?>">
                     <p><strong>Время работы:</strong> <?php echo $order['custom_work_time']; ?> часов</p>
-                    <p><strong>id:</strong> <?php echo $order['id']; ?> </p>
+                    
                     <div class="actions">
                         <form action="" method="post" style="display:inline;">
                             <input type="hidden" name="orderId" value="<?php echo $order['id']; ?>">

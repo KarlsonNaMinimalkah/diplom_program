@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acceptOrder'])) {
     $orderEmail = $_POST['orderEmail'];
 
     // Обновление статуса заказа
-    $update_sql = "UPDATE orders SET status_id = 5 WHERE id = $orderId";
+    $update_sql = "UPDATE orders SET status_id = 6 WHERE id = $orderId";
     if ($conn->query($update_sql) === TRUE) {
         // Отправка письма о том, что заказ был принят
         $subject = "Ваш заказ был принят";
@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acceptOrder'])) {
 $orders_sql = "SELECT o.*, c.name AS custom_name, c.image AS custom_image, c.work_time AS custom_work_time 
                FROM orders o
                JOIN custom c ON o.custom_id = c.id 
-               WHERE status_id = 4"; // добавили условие WHERE для фильтрации по статусу заказа
+               WHERE status_id = 5"; // добавили условие WHERE для фильтрации по статусу заказа
 $orders_result = $conn->query($orders_sql);
 
 // Массив соответствия числовых значений размеров текстовым меткам
@@ -167,25 +167,24 @@ $sizes = [
             <?php while ($order = $orders_result->fetch_assoc()): ?>
                 <div class="order-card">
                 
-                    <img src="<?php echo $order['image']; ?>" alt="<?php echo $order['name']; ?>">
+                <img src="<?php echo $order['image']; ?>" alt="<?php echo $order['name']; ?>">
                     <h3><?php echo $order['name']; ?></h3>
-                    <p><strong>Описание:</strong> <?php echo $order['description']; ?></p>
-                    <p><strong>Цена:</strong> <?php echo $order['price']; ?> руб.</p>
-                    <p><strong>Количество:</strong> <?php echo $order['quantity']; ?></p>
-                    <h1><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></h1>
+                    <h1><strong>Цена:</strong> <?php echo $order['price']; ?> руб.</h1>
                     <h1><strong>ФИО:</strong> <?php echo $order['full_name']; ?></h1>
+                    <p><strong>Количество:</strong> <?php echo $order['quantity']; ?></p>
+                    <p><strong>Размер:</strong> <?php echo isset($sizes[$order['size_id']]) ? $sizes[$order['size_id']] : 'Неизвестно'; ?></p>
                     <p><strong>Почта:</strong> <?php echo $order['email']; ?></p>
                     <p><strong>Дата оформления:</strong> <?php echo $order['order_date']; ?></p>
                     <p><strong>Кастомизация:</strong> <?php echo $order['custom_name']; ?></p>
                     <img src="<?php echo $order['custom_image']; ?>" alt="<?php echo $order['custom_name']; ?>">
-                    <p><strong>Время работы:</strong> <?php echo $order['custom_work_time']; ?> часов</p>
                     <h1><strong>id:</strong> <?php echo $order['id']; ?> </h1>
+                    
                     <div class="actions">
-                        
+                       
                         <form action="" method="post" style="display:inline;">
                             <input type="hidden" name="orderId" value="<?php echo $order['id']; ?>">
                             <input type="hidden" name="orderEmail" value="<?php echo $order['email']; ?>">
-                            <button type="submit" name="acceptOrder" class="accept">Завершить сборку</button>
+                            <button type="submit" name="acceptOrder" class="accept">Выдать</button>
                         </form>
                     </div>
                 </div>

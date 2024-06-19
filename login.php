@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             
-            if ($_SESSION['user_id'] == 5) {
+            if ($_SESSION['user_id'] == 10) {
                 header("Location: /диплом/programs/sborchik.php");
                 exit();
             } else {

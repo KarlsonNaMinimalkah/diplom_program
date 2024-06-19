@@ -70,4 +70,3 @@ if (isset($_GET['productId']) && isset($_GET['selectedSize'])) {
 } else {
     echo '<div class="error-message">Неправильные параметры запроса</div>';
 }
-

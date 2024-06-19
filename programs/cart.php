@@ -122,14 +122,18 @@ $conn->close();
                 <p>Цена: <?php echo $item['price']; ?> руб.</p>
                 <p>Кастом: <?php echo $item['custom_name']; ?></p>
                 <p>Размер: <?php echo $item['size_name']; ?></p>
-                <div class="actions">
-                    <form action="cart.php" method="post" style="display: inline;">
+                <div class="actions" style="display: flex;">
+                    <form action="cart.php" method="post" style="display: inline; margin-right: 2px;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="removeFromCart">Удалить</button>
                     </form>
                     <form action="order.php" method="post" style="display: inline;">
                         <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="placeOrder">Оформить заказ</button>
+                    </form>
+                    <form action="select_custom.php" method="get" style="display: inline; margin-left: 2px;">
+                        <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
+                        <button type="submit" name="selectCustom">Кастом</button>
                     </form>
                 </div>
             </div>
@@ -143,7 +147,6 @@ $conn->close();
     </div>
 </main>
 <footer>
-    
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>
 </body>
