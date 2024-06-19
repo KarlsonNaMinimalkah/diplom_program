@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Проверка, авторизован ли пользователь
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
@@ -12,15 +11,14 @@ $username = "root";
 $password = "";
 $dbname = "WorldOfCustomClothing";
 
-// Создание соединения
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Проверка соединения
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Обработка удаления товара из корзины
+$notification = "";
+
 if (isset($_POST['removeFromCart'])) {
     $cartId = $_POST['cartId'];
     $deleteSql = "DELETE FROM cart WHERE id = ? AND user_id = ?";
@@ -33,7 +31,6 @@ if (isset($_POST['removeFromCart'])) {
     $stmt->close();
 }
 
-// Получение количества товаров в корзине
 $cartCountSql = "SELECT COUNT(*) as count FROM cart WHERE user_id = ?";
 $stmt = $conn->prepare($cartCountSql);
 if ($stmt === false) {
@@ -45,7 +42,6 @@ $countResult = $stmt->get_result();
 $cartCount = $countResult->fetch_assoc()['count'];
 $stmt->close();
 
-// Получение информации о пользователе
 $userSql = "SELECT * FROM users WHERE id = ?";
 $stmt = $conn->prepare($userSql);
 if ($stmt === false) {
@@ -57,7 +53,6 @@ $userResult = $stmt->get_result();
 $user = $userResult->fetch_assoc();
 $stmt->close();
 
-// Обработка выхода пользователя
 if (isset($_POST['logout'])) {
     session_unset();
     session_destroy();
@@ -65,12 +60,12 @@ if (isset($_POST['logout'])) {
     exit();
 }
 
-// Выборка товаров из корзины
-$sql = "SELECT cart.id AS cart_id, cart.image, cart.name, cart.price, custom.name AS custom_name, size.size AS size_name 
+$sql = "SELECT cart.id AS id, cart.image, cart.name, cart.price, custom.name AS custom_name, size.size AS size_name, 
+        cart.custom_id, cart.size_id 
         FROM cart 
         JOIN custom ON cart.custom_id = custom.id 
         JOIN size ON cart.size_id = size.id 
-        WHERE cart.user_id = ?";
+        WHERE cart.user_id = ? AND cart.status_id = 1"; // Добавлено условие на status_id
 $stmt = $conn->prepare($sql);
 if ($stmt === false) {
     die("Error preparing statement: " . $conn->error);
@@ -78,7 +73,29 @@ if ($stmt === false) {
 $stmt->bind_param("i", $_SESSION['user_id']);
 $stmt->execute();
 $result = $stmt->get_result();
+
+$cartItems = []; // Массив для хранения всех товаров в корзине
+
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $cartItems[] = [
+            'id' => $row['id'],
+            'image' => $row['image'],
+            'name' => $row['name'],
+            'price' => $row['price'],
+            'custom_name' => $row['custom_name'],
+            'size_name' => $row['size_name'],
+            'custom_id' => $row['custom_id'],
+            'size_id' => $row['size_id']
+        ];
+    }
+} else {
+    $notification = "Корзина пуста или нет товаров с доступным статусом.";
+}
+
+$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,41 +114,39 @@ $result = $stmt->get_result();
     </nav>
 </header>
 <main>
-    <?php
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            ?>
+    <?php if ($notification): ?>
+        <div class="notification"><?php echo $notification; ?></div>
+    <?php endif; ?>
+    <?php if (!empty($cartItems)): ?>
+        <?php foreach ($cartItems as $item): ?>
             <div class="product">
-                <img src="<?php echo $row['image']; ?>" alt="<?php echo $row['name']; ?>">
-                <h2><?php echo $row['name']; ?></h2>
-                <p>Цена: <?php echo $row['price']; ?> руб.</p>
-                <p>Кастом: <?php echo $row['custom_name']; ?></p>
-                <p>Размер: <?php echo $row['size_name']; ?></p>
+                <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>">
+                <h2><?php echo $item['name']; ?></h2>
+                <p>ID товара: <?php echo $item['id']; ?></p> <!-- Вывод ID товара -->
+                <p>Цена: <?php echo $item['price']; ?> руб.</p>
+                <p>Кастом: <?php echo $item['custom_name']; ?></p>
+                <p>Размер: <?php echo $item['size_name']; ?></p>
 
                 <div class="actions">
-                    <!-- Кнопка удаления из корзины -->
                     <form action="cart.php" method="post" style="display: inline;">
-                        <input type="hidden" name="cartId" value="<?php echo $row['cart_id']; ?>">
+                        <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="removeFromCart">Удалить</button>
                     </form>
 
                     <form action="order.php" method="post" style="display: inline;">
-                        <input type="hidden" name="cartId" value="<?php echo $row['cart_id']; ?>">
+                        <input type="hidden" name="cartId" value="<?php echo $item['id']; ?>">
                         <button type="submit" name="placeOrder">Оформить заказ</button>
                     </form>
-
                 </div>
             </div>
-            <?php
-        }
-    } else {
-        echo "Корзина пуста.";
-    }
-    $conn->close();
-    ?>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>Корзина пуста или нет товаров с доступным статусом.</p>
+    <?php endif; ?>
 </main>
 <footer>
     <p>Контакты: email@example.com | Телефон: +1234567890</p>
 </footer>
 </body>
 </html>
+
