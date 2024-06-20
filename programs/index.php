@@ -60,7 +60,6 @@ $user = $user_result->fetch_assoc();
     <h1>Castom World</h1>
     <nav>
         <a href="index.php">Главная</a>
-        <a href="catalog.php">Каталог</a>
         <a href="user_order.php">Заказы</a>
     </nav>
     <div class="header-bottom">
@@ -83,7 +82,7 @@ $user = $user_result->fetch_assoc();
                 </div>
             <?php endif; ?>
             <div class="cart">
-                <a href="cart.php"><img src="cart-icon.png" alt="Корзина"></a>
+                <a href="cart.php"><img src="cart-icon.png" alt="Корзина" ></a>
                 <span id="cart-count">0</span>
             </div>
         </div>

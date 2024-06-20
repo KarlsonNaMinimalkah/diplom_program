@@ -71,7 +71,6 @@ if ($customs_result->num_rows > 0) {
     <h1>Castom World</h1>
     <nav>
         <a href="index.php">Главная</a>
-        <a href="catalog.php">Каталог</a>
         <a href="user_order.php">Заказы</a>
     </nav>
     <div class="header-bottom">

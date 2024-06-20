@@ -97,9 +97,7 @@ $conn->close();
 <header>
     <h1>Castom World</h1>
     <nav>
-        <a href="index.php">Главная</a>
-        <a href="catalog.php">Каталог</a>
-        <a href="contacts.php">Контакты</a>
+        
     </nav>
 </header>
 <main>
